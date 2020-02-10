@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import logging
+
 
 from django.utils.translation import ugettext_lazy as _
 
@@ -8,7 +8,7 @@ from pipeline.core.flow.activity import Service, StaticIntervalGenerator
 from pipeline.component_framework.component import Component
 from gcloud.conf import settings
 
-logger = logging.getLogger('celery')
+
 get_client_by_user = settings.ESB_GET_CLIENT_BY_USER
 
 __group_name__ = _(u"轩辕游戏(XY_GAME)")
@@ -21,10 +21,18 @@ class PushWsCdnService(Service):
         client = get_client_by_user(executor)
 
         test_textarea = data.inputs.test_textarea
-
+        xy_game_plat = data.get_one_of_inputs('xy_game_plat')
+        xy_game_command = data.get_one_of_inputs('xy_game_command')
+        xy_game_username = data.get_one_of_inputs('xy_game_username')
+        xy_game_apikey = data.get_one_of_inputs('xy_game_apikey')
+        
 
         api_kwargs = {
-            'text': test_textarea,
+            'plat': xy_game_plat,
+            'command': xy_game_command,
+            'username': xy_game_username,
+            'apikey': xy_game_apikey,
+            
         }
 
         api_result = client.push_ws_cdn.push_wscdn(api_kwargs)
@@ -45,12 +53,12 @@ class PushWsCdnService(Service):
 
 class PushWsCdnComponent(Component):
     name = _(u"推送网宿CDN")
-    code = 'push_cdn'
-    bound_service = PushWsCdn
+    code = 'pushcdn_node'
+    bound_service = PushWsCdnService
     embedded_form = True
     form = """
     (function(){
-        $.atoms.push_cdn = [
+        $.atoms.pushcdn_node = [
             {
                 tag_code: "xy_game_plat",
                 type: "textarea",
